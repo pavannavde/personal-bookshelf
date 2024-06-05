@@ -3,9 +3,12 @@ import React, { useEffect } from 'react'
 import { useState } from 'react'
 import Card from '../Card';
 import { Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import Loader from '../Loader';
 
 function HomePage() {
     const [data,setData] = useState([]);
+    const [isloading , setIsloading] = useState(true)
     const [search,setSearch] = useState('book');
 
     useEffect(()=>{
@@ -18,10 +21,16 @@ function HomePage() {
            const res = await axios.get(`https://openlibrary.org/search.json?q=${search}&limit=10&page=1.`);
            console.log(res.data.docs);
            setData(res.data.docs);
+           setIsloading(false);
        }
        catch(err){
            console.log(err);
        }
+    }
+    //set search value
+    function handleChange(e){
+      setSearch(e.target.value);
+      setIsloading(true);
     }
     //add book to my bookshelf
     function handleClick(id){
@@ -34,6 +43,7 @@ function HomePage() {
         else{
           localStorage.setItem('mybookshelf', JSON.stringify([item]));
         }
+        toast.success('Book added to Mybookshelf');
       }
   return (
     <div>
@@ -43,12 +53,12 @@ function HomePage() {
       </div>
       {/* search element */}
       <div className='search'>
-        <input type='text' placeholder='Search book ' onChange={(e)=>setSearch(e.target.value)}/>
+        <input type='text' placeholder='Search book ' onChange={handleChange}/>
       </div>
       {/* card element */}
       <div className='container'>
         {
-          data.map((item)=>{
+          isloading ? <Loader/> : data.map((item)=>{
             return(
               <Card item={item} Btext={'Add to Mybookshelf'} handleClick={handleClick} isButton={true}/>
             )
